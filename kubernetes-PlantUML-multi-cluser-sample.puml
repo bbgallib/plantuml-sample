@@ -1,0 +1,56 @@
+@startuml MultiClusterKubernetesPlantUML
+
+' Kubernetes-PlantUMLライブラリの定義
+!define KubernetesPuml https://raw.githubusercontent.com/dcasati/kubernetes-PlantUML/master/dist
+
+' 共通定義のインクルード
+!includeurl KubernetesPuml/kubernetes_Common.puml
+!includeurl KubernetesPuml/kubernetes_Context.puml
+!includeurl KubernetesPuml/kubernetes_Simplified.puml
+
+' 必要なKubernetesコンポーネントのインクルード
+!includeurl KubernetesPuml/OSS/KubernetesPod.puml
+!includeurl KubernetesPuml/OSS/KubernetesSvc.puml
+!includeurl KubernetesPuml/OSS/KubernetesIng.puml
+
+' クラスタ間をつなぐロードバランサー
+cloud "Global Load Balancer" as glb
+
+' クラスタAの定義
+Cluster_Boundary(clusterA, "Kubernetes Cluster A (Primary)") {
+    Namespace_Boundary(nsA, "app-namespace") {
+        KubernetesIng(ingA, "Ingress A", "外部アクセス用")
+        KubernetesSvc(svcA, "Service A", "Webアプリサービス")
+        KubernetesPod(podA1, "Web Pod 1", "Webアプリケーション")
+        KubernetesPod(podA2, "Web Pod 2", "Webアプリケーション")
+        KubernetesPod(podDB, "PostgreSQL DB", "データベース")
+    }
+    Rel(ingA, svcA, "リクエストルーティング")
+    Rel(svcA, podA1, "負荷分散")
+    Rel(svcA, podA2, "負荷分散")
+    Rel(podA1, podDB, "DBアクセス")
+    Rel(podA2, podDB, "DBアクセス")
+}
+
+' クラスタBの定義
+Cluster_Boundary(clusterB, "Kubernetes Cluster B (Secondary)") {
+    Namespace_Boundary(nsB, "batch-namespace") {
+        KubernetesIng(ingB, "Ingress B", "外部アクセス用")
+        KubernetesSvc(svcB, "Service B", "バッチサービス")
+        KubernetesPod(podB1, "Batch Pod 1", "バッチ処理")
+        KubernetesPod(podB2, "Batch Pod 2", "バッチ処理")
+        KubernetesPod(podMQ, "Kafka MQ", "メッセージキュー")
+    }
+    Rel(ingB, svcB, "リクエストルーティング")
+    Rel(svcB, podB1, "負荷分散")
+    Rel(svcB, podB2, "負荷分散")
+    Rel(podB1, podMQ, "メッセージ送信")
+    Rel(podB2, podMQ, "メッセージ送信")
+}
+
+' クラスタ間通信とロードバランサーの接続
+Rel(glb, ingA, "トラフィック /web")
+Rel(glb, ingB, "トラフィック /batch")
+Rel(svcA, svcB, "Istio Service Mesh")
+
+@enduml

@@ -1,0 +1,50 @@
+@startuml KubernetesPlantUMLArchitecture
+
+' フッターとスケールの設定
+footer Kubernetes PlantUML
+scale max 1024 width
+
+' ノード間の間隔設定
+skinparam nodesep 10
+skinparam ranksep 10
+
+' Kubernetes-PlantUMLライブラリの定義
+!define KubernetesPuml https://raw.githubusercontent.com/dcasati/kubernetes-PlantUML/master/dist
+
+' 共通定義のインクルード
+!includeurl KubernetesPuml/kubernetes_Common.puml
+!includeurl KubernetesPuml/kubernetes_Context.puml
+!includeurl KubernetesPuml/kubernetes_Simplified.puml
+
+' 必要なKubernetesコンポーネントのインクルード
+!includeurl KubernetesPuml/OSS/KubernetesPod.puml
+!includeurl KubernetesPuml/OSS/KubernetesSvc.puml
+!includeurl KubernetesPuml/OSS/KubernetesIng.puml
+
+' ユーザーアクターの定義
+actor "ユーザー" as userAlias
+left to right direction
+
+' Kubernetesクラスタの定義
+Cluster_Boundary(cluster, "Kubernetesクラスタ") {
+    ' ネームスペースの定義
+    Namespace_Boundary(ns, "アプリケーション") {
+        ' Ingressの定義
+        KubernetesIng(ingress, "ingress", "外部トラフィックのエントリポイント")
+
+        ' Serviceの定義
+        KubernetesSvc(service, "service", "アプリケーションのサービス")
+
+        ' Podの定義
+        KubernetesPod(pod1, "pod1", "アプリケーションのPod1")
+        KubernetesPod(pod2, "pod2", "アプリケーションのPod2")
+    }
+}
+
+' 関係性の定義
+Rel(userAlias, ingress, "HTTPリクエスト")
+Rel(ingress, service, "ルーティング")
+Rel(service, pod1, "負荷分散")
+Rel(service, pod2, "負荷分散")
+
+@enduml

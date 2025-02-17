@@ -1,0 +1,65 @@
+@startuml MultiClusterKubernetes
+
+skinparam defaultFontName Arial
+skinparam linetype polyline
+
+cloud "Global Load Balancer" as glb
+
+package "Kubernetes Cluster A (Primary)" {
+    node "Ingress Controller" as ingressA {
+        [Ingress A]
+    }
+
+    frame "Namespace: app-namespace" {
+        frame "Deployment: web-service" {
+            [Pod Web1]
+            [Pod Web2]
+        }
+
+        [Service A]
+        [PostgreSQL DB]
+        [ConfigMap A]
+    }
+
+    [Ingress A] --> [Service A]
+    [Service A] --> [Pod Web1]
+    [Service A] --> [Pod Web2]
+    [Pod Web1] --> [PostgreSQL DB]
+    [Pod Web2] --> [PostgreSQL DB]
+
+    [ConfigMap A] --> [Pod Web1]
+    [ConfigMap A] --> [Pod Web2]
+}
+
+package "Kubernetes Cluster B (Secondary)" {
+    node "Ingress Controller" as ingressB {
+        [Ingress B]
+    }
+
+    frame "Namespace: batch-namespace" {
+        frame "Deployment: batch-service" {
+            [Pod Batch1]
+            [Pod Batch2]
+        }
+
+        [Service B]
+        [Kafka MQ]
+        [ConfigMap B]
+    }
+
+    [Ingress B] --> [Service B]
+    [Service B] --> [Pod Batch1]
+    [Service B] --> [Pod Batch2]
+    [Pod Batch1] --> [Kafka MQ]
+    [Pod Batch2] --> [Kafka MQ]
+
+    [ConfigMap B] --> [Pod Batch1]
+    [ConfigMap B] --> [Pod Batch2]
+}
+
+glb --> [Ingress A] : Traffic /web
+glb --> [Ingress B] : Traffic /batch
+
+[Service A] <--> [Service B] : Istio Service Mesh
+
+@enduml

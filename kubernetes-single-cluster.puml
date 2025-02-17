@@ -1,0 +1,48 @@
+@startuml KubernetesArchitecture
+
+skinparam defaultFontName Arial
+skinparam linetype polyline
+
+package "Kubernetes Cluster" {
+    node "Ingress Controller" as ingress {
+        [Ingress]
+    }
+
+    node "Namespace: app-namespace" {
+        frame "Deployment: app-service-a" {
+            [Pod A1]
+            [Pod A2]
+        }
+
+        frame "Deployment: app-service-b" {
+            [Pod B1]
+            [Pod B2]
+        }
+
+        [Service A] -down-> [Pod A1]
+        [Service A] -down-> [Pod A2]
+
+        [Service B] -down-> [Pod B1]
+        [Service B] -down-> [Pod B2]
+
+        [ConfigMap]
+        [Secret]
+    }
+
+    node "Database Layer" {
+        [PostgreSQL DB]
+    }
+}
+
+[Ingress] --> [Service A] : Routes /appA
+[Ingress] --> [Service B] : Routes /appB
+
+[Service A] --> [PostgreSQL DB]
+[Service B] --> [PostgreSQL DB]
+
+[ConfigMap] --> [Pod A1]
+[ConfigMap] --> [Pod A2]
+[Secret] --> [Pod B1]
+[Secret] --> [Pod B2]
+
+@enduml
