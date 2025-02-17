@@ -1,4 +1,4 @@
-@startuml KubernetesPlantUMLArchitecture
+@startuml KubernetesArchitecture
 
 ' フッターとスケールの設定
 footer Kubernetes PlantUML

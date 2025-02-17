@@ -1,4 +1,4 @@
-@startuml MultiClusterKubernetesPlantUML
+@startuml MultiClusterKubernetes
 
 ' Kubernetes-PlantUMLライブラリの定義
 !define KubernetesPuml https://raw.githubusercontent.com/dcasati/kubernetes-PlantUML/master/dist
